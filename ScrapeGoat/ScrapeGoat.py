@@ -3,7 +3,8 @@ import os.path
 import requests
 from bs4 import BeautifulSoup
 import json
-import numpy as np
+import networkx as nx
+import matplotlib.pyplot as plt
 
 BASE_URL = 'https://en.wikipedia.org'
 CATEGORY_TITLE = 'Category:19th-century_classical_composers'
@@ -51,12 +52,12 @@ def getCategoryEntries(pageUrl):
     return entries
 
 def writeToFile(obj, filename):
-    with open(filename, 'w') as fp:
+    with open(filename, 'w', encoding='utf-8') as fp:
         json.dump(obj, fp)
 
 def readFromFile(filename):
     if os.path.exists(filename):
-        with open(filename, 'r') as fp:
+        with open(filename, 'r', encoding='utf-8') as fp:
             return json.load(fp)
     return None
 
@@ -109,15 +110,31 @@ def mergeGraphData():
         merged.update(d)
     writeToFile(merged, GRAPH_DATA_FILENAME)
 
+def readGraphData():
+    d = readFromFile(GRAPH_DATA_FILENAME)
+    if d == None:
+        return {}
+    else:
+        return d
 
-# start scraping and create entries list
-# saveEntriesList()
+def createGraph():
+    d = readGraphData()
+    G = nx.MultiDiGraph()
+    G.add_nodes_from(d.keys())
+    for k,v in d.items():
+        for n in v:
+            G.add_edge(k, n)
+    return G
+    
+# call this method to recreate graph data
+def createGraphData():
+    saveEntriesList()
+    saveEntryLinksLists()
+    mergeGraphData()
 
-# read from saved entries list and create entry links list
-# saveEntryLinksLists()
 
-#save merged file
-# mergeGraphData()
+
+
 
 
 
